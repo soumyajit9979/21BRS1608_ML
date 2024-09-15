@@ -137,3 +137,22 @@ docker exec -it <container_id> /bin/bash
 ### Debug Flask Application
 Add debug print statements or use a debugger to trace issues within your Flask application. Ensure `FLASK_ENV` is set to `development` for detailed error messages.
 
+
+![image](https://github.com/user-attachments/assets/52578427-a94b-47e2-ae22-e983e6e85522)
+
+
+![image](https://github.com/user-attachments/assets/d8b4bc2b-c25a-4e10-a539-393b773e9aab)
+
+
+![image](https://github.com/user-attachments/assets/67ebf785-462d-4644-b517-3b5c3ba08e61)
+
+
+![image](https://github.com/user-attachments/assets/46509336-9dd7-42b4-b301-87ea05e2a6d6)
+
+
+![image](https://github.com/user-attachments/assets/f5c787c3-234c-4b69-994c-91024a456ddf)
+
+![image](https://github.com/user-attachments/assets/ef99a50d-2694-4f2e-a64c-eb484341afdf)
+
+
+**Note**: Symantic Caching can be done, to store the response to any question in cache memory, which can be quickly responded when any query similar to it is asked once again, this reduces the use of LLM and helps us getting the response sooner as well
