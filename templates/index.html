@@ -5,122 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot UI</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #chat-container {
-            width: 400px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        #chat-box {
-            height: 300px;
-            overflow-y: scroll;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .chat-message {
-            margin-bottom: 10px;
-        }
-        .user-message {
-            text-align: right;
-            color: blue;
-        }
-        .bot-message {
-            text-align: left;
-            color: green;
-        }
-        #user-input {
-            width: calc(100% - 80px);
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        #send-button {
-            width: 60px;
-            padding: 10px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #send-button:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
 
-<div id="chat-container">
-    <div id="chat-box"></div>
-    <input type="text" id="user-input" placeholder="Type your message..." />
-    <button id="send-button">Send</button>
+<div id="user-container">
+    <div id="user-question">
+        <h2>Welcome!</h2>
+        <p>Are you a new user or an existing user?</p>
+        <button id="new-user-button">New User</button>
+        <button id="existing-user-button">Existing User</button>
+    </div>
+
+    <div id="user-form" style="display:none;">
+        <div id="new-user-form" style="display:none;">
+            <p>Please enter your preferred username:</p>
+            <input type="text" id="user-name-input" placeholder="Username" />
+            <button id="submit-new-user">Submit</button>
+        </div>
+        <div id="existing-user-form" style="display:none;">
+            <p>Please enter your user ID:</p>
+            <input type="text" id="user-id-input" placeholder="User ID" />
+            <button id="submit-existing-user">Submit</button>
+        </div>
+    </div>
+
+    <div id="chat-container" style="display:none;">
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Type your message..." />
+        <button id="send-button">Send</button>
+    </div>
 </div>
 
 <script>
+    const userQuestion = document.getElementById('user-question');
+    const userForm = document.getElementById('user-form');
+    const newUserForm = document.getElementById('new-user-form');
+    const existingUserForm = document.getElementById('existing-user-form');
+    const chatContainer = document.getElementById('chat-container');
+    const userIdInput = document.getElementById('user-id-input');
+    const userNameInput = document.getElementById('user-name-input');
+    const submitNewUserButton = document.getElementById('submit-new-user');
+    const submitExistingUserButton = document.getElementById('submit-existing-user');
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
-    // Add a new message to the chat box
-    function addMessageToChatBox(message, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('chat-message');
-        messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-        messageDiv.textContent = message;
-        chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    let userId = '';
 
-    // Send message to the Flask API
-    async function sendMessage() {
-        const message = userInput.value;
-        if (!message) return;
+    document.getElementById('new-user-button').addEventListener('click', () => {
+        userQuestion.style.display = 'none';
+        userForm.style.display = 'block';
+        newUserForm.style.display = 'block';
+    });
 
-        // Display user's message in the chat box
-        addMessageToChatBox(message, 'user');
-        userInput.value = '';
+    document.getElementById('existing-user-button').addEventListener('click', () => {
+        userQuestion.style.display = 'none';
+        userForm.style.display = 'block';
+        existingUserForm.style.display = 'block';
+    });
 
-        try {
-            // Send the message to the Flask API
-            const response = await fetch('/ask', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ question: message }),
-            });
+    submitNewUserButton.addEventListener('click', async () => {
+        const userName = userNameInput.value;
+        if (!userName) return;
 
-            const data = await response.json();
+        const response = await fetch('/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_type: 'new', user_name: userName })
+        });
 
-            // Display the bot's response in the chat box
-            if (data.answer) {
-                addMessageToChatBox(data.answer, 'bot');
-            } else if (data.error) {
-                addMessageToChatBox('Error: ' + data.error, 'bot');
-            }
-        } catch (error) {
-            addMessageToChatBox('Error: ' + error.message, 'bot');
+        const data = await response.json();
+
+        if (response.ok) {
+            userId = data.user_id;
+            alert('Your user ID is: ' + userId);
+            userForm.style.display = 'none';
+            chatContainer.style.display = 'block';
+        } else {
+            alert(data.error);
         }
-    }
+    });
 
-    // Send the message when the user clicks the button or presses Enter
-    sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
+    submitExistingUserButton.addEventListener('click', async () => {
+        const userIdInputValue = userIdInput.value;
+        if (!userIdInputValue) return;
+
+        const response = await fetch('/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_type: 'old', user_id: userIdInputValue })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            userId = data.user_id;
+            userForm.style.display = 'none';
+            chatContainer.style.display = 'block';
+        } else {
+            alert(data.error);
+        }
+    });
+
+    sendButton.addEventListener('click', async () => {
+        const message = userInput.value;
+        if (!message || !userId) return;
+
+        const response = await fetch('/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, question: message })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            chatBox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+            chatBox.innerHTML += `<p><strong>Bot:</strong> ${data.answer}</p>`;
+            userInput.value = '';
+        } else {
+            alert(data.error);
         }
     });
 </script>
