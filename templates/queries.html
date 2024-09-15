@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Queries</title>
+    <style>
+    </style>
+</head>
+<body>
+
+<h2>Retrieve User Queries</h2>
+<p>Enter your User ID to see your last 5 queries.</p>
+<input type="text" id="query-user-id" placeholder="User ID" />
+<button id="fetch-queries">Fetch Queries</button>
+
+<div id="queries-container" style="display:none;">
+    <h3>Latest 5 Queries</h3>
+    <ul id="queries-list"></ul>
+</div>
+
+<script>
+    document.getElementById('fetch-queries').addEventListener('click', async () => {
+        const userId = document.getElementById('query-user-id').value;
+        if (!userId) return;
+
+        const response = await fetch('/user/queries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            const queriesList = document.getElementById('queries-list');
+            queriesList.innerHTML = '';
+
+            data.queries.forEach(query => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<strong>Question:</strong> ${query.question}<br><strong>Answer:</strong> ${query.answer}<br><strong>Timestamp:</strong> ${query.timestamp}`;
+                queriesList.appendChild(listItem);
+            });
+
+            document.getElementById('queries-container').style.display = 'block';
+        } else {
+            alert(data.error);
+        }
+    });
+</script>
+
+</body>
+</html>
