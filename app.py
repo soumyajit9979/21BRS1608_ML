@@ -37,10 +37,31 @@ texts = text_splitter.split_text(context)
 embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=GOOGLE_API_KEY)
 vector_index = Chroma.from_texts(texts, embeddings).as_retriever(search_kwargs={"k": 5})
 
-template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. Keep the answer as concise as possible. Always say "thanks for asking!" at the end of the answer.
+template = """Use the following pieces of context to answer the question at the end. 
+If you don't know the answer, just say that you don't know, don't try to make up an answer. 
+Keep the answer as concise as possible. Always say "thanks for asking!" at the end of the answer.
+
+Context:
 {context}
+
 Question: {question}
-Helpful Answer:"""
+Top K Results: 5
+Threshold: 0.5
+
+Provide the top 5 answers based on the context, where each answer should include:
+1. The answer text.
+2. The similarity score of the answer.
+
+Only include results where the similarity score is greater than or equal to the threshold, also give each answer in new line. 
+
+Format your response as a list of answers with their similarity scores:
+1. Answer 1: [Answer Text] (Score: [Similarity Score])
+2. Answer 2: [Answer Text] (Score: [Similarity Score])
+...
+5. Answer 5: [Answer Text] (Score: [Similarity Score])
+
+If no results meet the threshold, say "No relevant answers found." 
+Thanks for asking!"""
 
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
